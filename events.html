@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events & Festivals – Discover Dakshina Kannada</title>
+    <link rel="stylesheet" href="events.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">Discover DK</div>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="destinations.html">Destinations</a></li>
+                <li><a href="hotels.html">Hotels & Stays</a></li>
+                <li><a href="events.html" class="active">Events & Festivals</a></li>
+                <li><a href="booking.html">Booking</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1>Events & Festivals</h1>
+        <p>Experience the vibrant culture and traditions of Dakshina Kannada.</p>
+    </section>
+
+    <!-- Events List -->
+    <section class="events" id="events-list">
+        <!-- Event cards will be injected here -->
+    </section>
+
+    <script>
+const eventsContainer = document.getElementById("events-list");
+
+function displayEvents(events) {
+    eventsContainer.innerHTML = "";
+    if (!events || events.length === 0) {
+        eventsContainer.innerHTML = "<p>No events available.</p>";
+        return;
+    }
+    events.forEach(event => {
+        const card = document.createElement("div");
+        card.classList.add("event-card");
+        card.innerHTML = `
+            <div class="event-info">
+                <h3>${event.name}</h3>
+                <p><strong>Date:</strong> ${event.date}</p>
+                <p><strong>Location:</strong> ${event.location}</p>
+                <p>${event.description}</p>
+                <button class="register-btn" onclick="registerEvent('${event.name}')">Register</button>
+            </div>
+        `;
+        eventsContainer.appendChild(card);
+    });
+}
+
+function registerEvent(eventName) {
+    alert(`Registration started for: ${eventName}`);
+    window.location.href = `booking.html?event=${encodeURIComponent(eventName)}`;
+}
+
+// Try API first
+fetch("http://localhost:3000/events", { method: "GET", redirect: "follow" })
+    .then(response => {
+        if (!response.ok) throw new Error("API failed");
+        return response.json();
+    })
+    .then(data => displayEvents(data))
+    .catch(() => {
+        console.warn("API failed, loading local JSON instead...");
+        fetch("http://localhost:3000/events")
+    .then(res => res.json())
+    .then(data => displayEvents(data))
+    .catch(err => console.error("Error loading events:", err));
+
+           
+    });
+</script>
+
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Discover Dakshina Kannada | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

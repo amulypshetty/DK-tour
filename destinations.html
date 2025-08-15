@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destinations – Discover Dakshina Kannada</title>
+    <link rel="stylesheet" href="destinations.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">Discover DK</div>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="destinations.html" class="active">Destinations</a></li>
+                <li><a href="hotels.html">Hotels & Stays</a></li>
+                <li><a href="events.html">Events & Festivals</a></li>
+                <li><a href="booking.html">Booking</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Title -->
+    <section class="page-header">
+        <h1>Explore Destinations</h1>
+        <p>Discover the beauty of Dakshina Kannada – beaches, temples, and treks.</p>
+    </section>
+
+    <!-- Filter Buttons -->
+    <section class="filters">
+    <button class="filter-btn active" data-category="All">All</button>
+    <button class="filter-btn" data-category="Beach">Beaches</button>
+    <button class="filter-btn" data-category="Temple">Temples</button>
+    <button class="filter-btn" data-category="Trekking">Trekking</button>
+</section>
+
+
+    <!-- Destinations List -->
+    <section class="destinations" id="destinations-list">
+        <!-- Cards will be injected here by JS -->
+    </section>
+   <script>
+fetch("http://localhost:3000/destinations")
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to fetch destinations");
+        }
+        return response.json();
+    })
+    .then(data => {
+        window.destinationsData = data;
+        displayDestinations(window.destinationsData); // Show all at start
+    })
+    .catch(err => console.error("Error loading destinations:", err));
+
+const listContainer = document.getElementById("destinations-list");
+const filterButtons = document.querySelectorAll(".filter-btn");
+
+// Render cards
+function displayDestinations(destinations) {
+    listContainer.innerHTML = "";
+    if (!destinations || destinations.length === 0) {
+        listContainer.innerHTML = "<p>No destinations found.</p>";
+        return;
+    }
+    destinations.forEach(dest => {
+        const card = document.createElement("div");
+        card.classList.add("destination-card");
+        card.innerHTML = `
+            <img src="${dest.image_url}" alt="${dest.name}">
+            <h3>${dest.name}</h3>
+            <p>${dest.description}</p>
+        `;
+        listContainer.appendChild(card);
+    });
+}
+
+// Handle filtering
+filterButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelector(".filter-btn.active").classList.remove("active");
+        btn.classList.add("active");
+
+        const category = btn.dataset.category;
+        if (category === "All") {
+            displayDestinations(window.destinationsData);
+        } else {
+            const filtered = window.destinationsData.filter(d => d.category === category);
+            displayDestinations(filtered);
+        }
+    });
+});
+</script>
+
+
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Discover Dakshina Kannada | All Rights Reserved</p>
+    </footer>
+
+   
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking / Registration – Discover Dakshina Kannada</title>
+    <link rel="stylesheet" href="booking.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">Discover DK</div>
+            <ul class="nav-links">
+                <li><a href="home.html">Home</a></li>
+                <li><a href="destinations.html">Destinations</a></li>
+                <li><a href="hotels.html">Hotels & Stays</a></li>
+                <li><a href="events.html">Events & Festivals</a></li>
+                <li><a href="booking.html" class="active">Booking</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <h1 id="form-title">Booking / Registration</h1>
+        <p id="form-subtitle">Fill out the form to proceed.</p>
+    </section>
+
+    <!-- Booking Form -->
+    <section class="form-section">
+        <form id="booking-form">
+            <input type="hidden" name="type" id="type">
+            <input type="hidden" name="itemName" id="itemName">
+
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <div id="hotel-fields" style="display:none;">
+                <label for="checkin">Check-In Date:</label>
+                <input type="date" id="checkin" name="checkin">
+
+                <label for="checkout">Check-Out Date:</label>
+                <input type="date" id="checkout" name="checkout">
+
+                <label for="guests">Number of Guests:</label>
+                <input type="number" id="guests" name="guests" min="1" value="1">
+            </div>
+
+            <div id="event-fields" style="display:none;">
+                <label for="tickets">Number of Tickets:</label>
+                <input type="number" id="tickets" name="tickets" min="1" value="1">
+            </div>
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </section>
+    <!-- Display bookings list -->
+<div id="booking-list"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const hotelName = params.get("hotel");
+const eventName = params.get("event");
+
+const formTitle = document.getElementById("form-title");
+const formSubtitle = document.getElementById("form-subtitle");
+const hotelFields = document.getElementById("hotel-fields");
+const eventFields = document.getElementById("event-fields");
+const typeInput = document.getElementById("type");
+const itemNameInput = document.getElementById("itemName");
+
+if (hotelName) {
+    formTitle.textContent = `Book Hotel: ${hotelName}`;
+    formSubtitle.textContent = "Please provide your stay details.";
+    hotelFields.style.display = "block";
+    typeInput.value = "hotel";
+    itemNameInput.value = hotelName;
+} else if (eventName) {
+    formTitle.textContent = `Register for Event: ${eventName}`;
+    formSubtitle.textContent = "Please provide your registration details.";
+    eventFields.style.display = "block";
+    typeInput.value = "event";
+    itemNameInput.value = eventName;
+}
+
+// --- 1️⃣ Handle booking form submission ---
+document.getElementById("booking-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = Object.fromEntries(new FormData(this).entries());
+
+    let apiEndpoint = formData.type === "hotel"
+        ? "http://localhost:3000/bookings"
+        : "http://localhost:3000/event_reg";
+
+   fetch("http://localhost:3000/bookings", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(bookingData)
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(result => {
+    console.log("Booking saved successfully:", result);
+    alert("Booking submitted!");
+})
+.catch(error => {
+    console.error("Error saving booking:", error);
+    alert("Error saving booking.");
+});
+})
+
+// --- 2️⃣ Load existing bookings ---
+function loadBookings() {
+    fetch("http://localhost:3000/bookings")
+        .then(res => res.json())
+        .then(bookings => {
+            const container = document.getElementById("booking-list");
+            container.innerHTML = "";
+            bookings.forEach(b => {
+                const item = document.createElement("div");
+                item.innerHTML = `
+                    <h3>${b.name}</h3>
+                    <p>Email: ${b.email}</p>
+                    <p>Type: ${b.type}</p>
+                    <p>Details: ${b.details || 'No details provided'}</p>
+                `;
+                container.appendChild(item);
+            });
+        })
+        .catch(err => console.error("Error loading bookings:", err));
+}
+
+// Load on page start
+loadBookings();
+</script>
+
+
+    <!-- <script>
+        // Detect from query params
+        const params = new URLSearchParams(window.location.search);
+        const hotelName = params.get("hotel");
+        const eventName = params.get("event");
+
+        const formTitle = document.getElementById("form-title");
+        const formSubtitle = document.getElementById("form-subtitle");
+        const hotelFields = document.getElementById("hotel-fields");
+        const eventFields = document.getElementById("event-fields");
+        const typeInput = document.getElementById("type");
+        const itemNameInput = document.getElementById("itemName");
+
+        if (hotelName) {
+            formTitle.textContent = `Book Hotel: ${hotelName}`;
+            formSubtitle.textContent = "Please provide your stay details.";
+            hotelFields.style.display = "block";
+            typeInput.value = "hotel";
+            itemNameInput.value = hotelName;
+        } else if (eventName) {
+            formTitle.textContent = `Register for Event: ${eventName}`;
+            formSubtitle.textContent = "Please provide your registration details.";
+            eventFields.style.display = "block";
+            typeInput.value = "event";
+            itemNameInput.value = eventName;
+        }
+
+        // Handle form submission
+       document.getElementById("booking-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = Object.fromEntries(new FormData(this).entries());
+
+    let apiEndpoint = formData.type === "hotel"
+        ? "http://localhost:3000/bookings"
+        : "http://localhost:3000/event_reg";
+
+   <div id="booking-list"></div>
+
+
+fetch("http://localhost:3000/bookings")
+    .then(res => res.json())
+    .then(bookings => {
+        const container = document.getElementById("booking-list");
+        container.innerHTML = "";
+        bookings.forEach(b => {
+            const item = document.createElement("div");
+            item.innerHTML = `
+                <h3>${b.name}</h3>
+                <p>Email: ${b.email}</p>
+                <p>Type: ${b.type}</p>
+                <p>Details: ${b.details || 'No details provided'}</p>
+            `;
+            container.appendChild(item);
+        });
+    })
+    .catch(err => console.error("Error loading bookings:", err));
+
+       })
+
+    </script> -->
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Discover Dakshina Kannada | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
